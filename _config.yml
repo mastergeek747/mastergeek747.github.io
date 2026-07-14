@@ -1,0 +1,11 @@
+title: 리서치 노트
+description: X, Reddit 등에서 조사한 시장/여론 동향 리포트 기록
+theme: minima
+markdown: kramdown
+permalink: /:year/:month/:day/:title/
+
+minima:
+  skin: dark
+
+header_pages:
+  - about.md
