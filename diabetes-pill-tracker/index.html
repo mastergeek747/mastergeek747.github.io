@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>당뇨약 복용 알리미 & 체크 위젯</title>
+    <meta name="description" content="갤럭시 스마트폰 홈 화면 맞춤 매일 아침/저녁 당뇨약 복용 체크 및 달력 기록 앱">
+    
+    <!-- PWA settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063822.png">
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="app-icon"><i class="fa-solid fa-pills"></i></div>
+                <div>
+                    <h1>당뇨약 체크 <span>위젯</span></h1>
+                    <p id="currentDateText">2026년 8월 17일 (월)</p>
+                </div>
+            </div>
+            <button id="pwaInstallBtn" class="install-badge-btn" title="갤럭시 홈 화면에 위젯 추가">
+                <i class="fa-solid fa-mobile-screen-button"></i> 홈 화면 추가
+            </button>
+        </header>
+
+        <!-- Main Today's Widget Card -->
+        <main class="main-content">
+            <section class="widget-hero-card">
+                <div class="widget-header">
+                    <h2><i class="fa-solid fa-calendar-check"></i> 오늘 약 복용 현황</h2>
+                    <span class="streak-badge" id="streakBadge"><i class="fa-solid fa-fire"></i> 0일 연속 복용</span>
+                </div>
+
+                <!-- Today's Pill Cards Grid (Morning & Evening) -->
+                <div class="pill-cards-grid">
+                    <!-- Morning Pill Card -->
+                    <div class="pill-card morning" id="morningCard">
+                        <div class="pill-card-top">
+                            <div class="time-tag"><i class="fa-solid fa-sun"></i> 아침 약</div>
+                            <span class="alarm-time-info" id="morningAlarmText">추천: 08:00 AM</span>
+                        </div>
+
+                        <div class="pill-card-body">
+                            <div class="pill-icon-circle">
+                                <i class="fa-solid fa-capsules"></i>
+                            </div>
+                            <div class="pill-status-info">
+                                <span class="status-title" id="morningStatusTitle">아침 약 미복용</span>
+                                <span class="status-time" id="morningTimeText">아직 복용하지 않았습니다</span>
+                            </div>
+                        </div>
+
+                        <button id="toggleMorningBtn" class="pill-action-btn">
+                            <i class="fa-solid fa-check"></i> 아침 약 복용 완료!
+                        </button>
+                    </div>
+
+                    <!-- Evening Pill Card -->
+                    <div class="pill-card evening" id="eveningCard">
+                        <div class="pill-card-top">
+                            <div class="time-tag"><i class="fa-solid fa-moon"></i> 저녁 약</div>
+                            <span class="alarm-time-info" id="eveningAlarmText">추천: 07:00 PM</span>
+                        </div>
+
+                        <div class="pill-card-body">
+                            <div class="pill-icon-circle">
+                                <i class="fa-solid fa-tablets"></i>
+                            </div>
+                            <div class="pill-status-info">
+                                <span class="status-title" id="eveningStatusTitle">저녁 약 미복용</span>
+                                <span class="status-time" id="eveningTimeText">아직 복용하지 않았습니다</span>
+                            </div>
+                        </div>
+
+                        <button id="toggleEveningBtn" class="pill-action-btn">
+                            <i class="fa-solid fa-check"></i> 저녁 약 복용 완료!
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Alarm Reminder Banner -->
+                <div class="reminder-banner">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="reminderMessage">매일 밤 12시(00:00)에 위젯이 자동으로 다음 날 상태로 초기화됩니다.</span>
+                </div>
+            </section>
+
+            <!-- Monthly History Calendar Section -->
+            <section class="history-section card-panel">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-calendar-days"></i> 이번 달 복용 달력 기록</h3>
+                    <div class="calendar-month-picker">
+                        <button id="prevMonthBtn">&lt;</button>
+                        <span id="calendarMonthTitle">2026년 8월</span>
+                        <button id="nextMonthBtn">&gt;</button>
+                    </div>
+                </div>
+
+                <div class="calendar-legend">
+                    <span><span class="dot full"></span> 아침+저녁 완복</span>
+                    <span><span class="dot half"></span> 1회 복용</span>
+                    <span><span class="dot none"></span> 미복용</span>
+                </div>
+
+                <div class="calendar-grid-wrapper">
+                    <div class="calendar-weekdays">
+                        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                    </div>
+                    <div class="calendar-days-grid" id="calendarDaysGrid">
+                        <!-- Calendar Days dynamically generated -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Samsung Galaxy Home Screen Installation Guide -->
+            <section class="galaxy-guide-card card-panel">
+                <h3><i class="fa-brands fa-android"></i> 갤럭시 홈 화면에 위젯처럼 배치하는 법</h3>
+                <ol class="guide-list">
+                    <li>스마트폰 브라우저(삼성 인터넷 또는 크롬) 우측 상단/하단 <strong>메뉴 (⋮ 또는 ≡)</strong>를 누릅니다.</li>
+                    <li><strong>'홈 화면에 추가'</strong> (또는 앱 설치) 아이콘을 터치합니다.</li>
+                    <li>갤럭시 홈 화면에 생성된 <strong>'당뇨약 체크'</strong> 아이콘을 누르면 1초 만에 약 복용을 체크할 수 있습니다!</li>
+                </ol>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

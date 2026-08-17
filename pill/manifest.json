@@ -1,0 +1,21 @@
+{
+  "name": "당뇨약 복용 체크 위젯",
+  "short_name": "당뇨약 체크",
+  "description": "아침/저녁 당뇨약 복용 현황 체크 및 달력 기록 앱",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3063/3063822.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3063/3063822.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
