@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>럭키 6/45 - 프리미엄 로또 번호 생성기 & 분석기</title>
+    <meta name="description" content="AI 통계 분석, 3D 추첨기 애니메이션, 고정수/제외수 필터 및 운세 맞춤 럭키 로또 6/45 번호 생성기">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-glow-container">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+
+    <div class="app-wrapper">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-gem"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>LUCKY <span>6/45</span></h1>
+                    <p class="tagline">AI 스마트 로또 번호 시뮬레이터</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="soundToggleBtn" class="icon-btn" title="사운드 토글">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button id="fortuneModalBtn" class="pill-btn highlight">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> 오늘의 로또 운세
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <main class="main-layout">
+            <!-- Left Side: 3D Lottery Machine & Control Panel -->
+            <section class="generator-panel card-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-bowling-ball"></i> 라이브 추첨 시뮬레이터</h2>
+                    <span class="badge">LIVE 60FPS</span>
+                </div>
+
+                <!-- 3D Ball Chamber Screen -->
+                <div class="lottery-chamber-wrapper">
+                    <div class="chamber-glass">
+                        <canvas id="ballCanvas" width="400" height="260"></canvas>
+                        <div class="chamber-reflection"></div>
+                        <div class="chamber-tube"></div>
+                    </div>
+                    <div class="chamber-base">
+                        <div class="status-light pulsating"></div>
+                        <span id="chamberStatusText">추첨 준비 완료</span>
+                    </div>
+                </div>
+
+                <!-- Generated Live Balls Tray -->
+                <div class="live-tray-container">
+                    <div class="tray-label">현재 추출된 번호</div>
+                    <div class="live-balls-tray" id="liveBallsTray">
+                        <div class="ball-placeholder">?</div>
+                        <div class="ball-placeholder">?</div>
+                        <div class="ball-placeholder">?</div>
+                        <div class="ball-placeholder">?</div>
+                        <div class="ball-placeholder">?</div>
+                        <div class="ball-placeholder">?</div>
+                        <span class="plus-sign">+</span>
+                        <div class="ball-placeholder bonus">?</div>
+                    </div>
+                </div>
+
+                <!-- Main Generation Mode Controls -->
+                <div class="mode-selector-group">
+                    <label class="section-label"><i class="fa-solid fa-sliders"></i> 생성 전략 선택</label>
+                    <div class="mode-chips">
+                        <button class="chip-btn active" data-mode="random">
+                            <i class="fa-solid fa-shuffle"></i> 순수 완전 랜덤
+                        </button>
+                        <button class="chip-btn" data-mode="balanced">
+                            <i class="fa-solid fa-scale-balanced"></i> 홀짝/고저 황금비율
+                        </button>
+                        <button class="chip-btn" data-mode="ai-stats">
+                            <i class="fa-solid fa-chart-line"></i> 통계 추천 (합계 100~175)
+                        </button>
+                        <button class="chip-btn" data-mode="custom">
+                            <i class="fa-solid fa-filter"></i> 고정수 / 제외수 커스텀
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Number Filter Drawer (Shown in custom mode) -->
+                <div class="custom-filter-box hidden" id="customFilterBox">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" id="tabIncludeBtn">고정수 지정 (최대 5개)</button>
+                        <button class="filter-tab" id="tabExcludeBtn">제외수 지정</button>
+                    </div>
+                    <div class="number-grid-selector" id="numberGridSelector">
+                        <!-- 1 to 45 grid generated dynamically -->
+                    </div>
+                    <div class="filter-summary">
+                        <span><strong class="inc-text">고정수:</strong> <span id="includeListText">없음</span></span>
+                        <span><strong class="exc-text">제외수:</strong> <span id="excludeListText">없음</span></span>
+                        <button id="resetFiltersBtn" class="small-btn"><i class="fa-solid fa-rotate-left"></i> 초기화</button>
+                    </div>
+                </div>
+
+                <!-- Games Quantity & Action Button -->
+                <div class="action-bar">
+                    <div class="game-count-picker">
+                        <label>게임 수:</label>
+                        <div class="counter-btn-group">
+                            <button id="cntDecBtn">-</button>
+                            <span id="gameCountVal">5게임</span>
+                            <button id="cntIncBtn">+</button>
+                        </div>
+                    </div>
+                    <button id="generateTriggerBtn" class="primary-gradient-btn">
+                        <i class="fa-solid fa-play"></i> 추첨 시작하기
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Side: Ticket Result Sheet & History -->
+            <section class="results-panel card-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-receipt"></i> 로또 복권 용지 결과</h2>
+                    <div class="ticket-actions">
+                        <button id="copyAllBtn" class="secondary-btn" title="전체 복사">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                        <button id="saveTicketBtn" class="secondary-btn" title="보관함에 저장">
+                            <i class="fa-regular fa-bookmark"></i>
+                        </button>
+                        <button id="printTicketBtn" class="secondary-btn" title="인쇄">
+                            <i class="fa-solid fa-print"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Authentic Korean Lotto Ticket Style Container -->
+                <div class="lotto-ticket" id="lottoTicket">
+                    <div class="ticket-header">
+                        <div class="ticket-logo">나눔로또 6/45</div>
+                        <div class="ticket-info">
+                            <span id="ticketDate">발행일: 2026/08/17 (월) 09:28</span>
+                            <span id="ticketRound">제 1185 회 차 추첨예정</span>
+                        </div>
+                    </div>
+
+                    <div class="ticket-body" id="ticketRowsContainer">
+                        <!-- Rows A, B, C, D, E dynamically generated -->
+                        <div class="empty-ticket-msg">
+                            <i class="fa-solid fa-dice"></i>
+                            <p>'추첨 시작하기' 버튼을 눌러 로또 번호를 생성하세요.</p>
+                        </div>
+                    </div>
+
+                    <div class="ticket-footer">
+                        <div class="qr-mockup">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <span>확인용 QR</span>
+                        </div>
+                        <div class="barcode-mockup">
+                            <div class="bar-lines"></div>
+                            <span>74829 - 01928 - 93847</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stat Summary Card -->
+                <div class="stats-summary-card" id="statsSummaryCard">
+                    <h3><i class="fa-solid fa-chart-pie"></i> 이번 조합 통계 분석</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">평균 합계</span>
+                            <span class="stat-val" id="statAvgSum">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">평균 홀:짝</span>
+                            <span class="stat-val" id="statOddEven">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">가장 많이 나온 색상</span>
+                            <span class="stat-val" id="statTopColor">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">연속 번호 조합</span>
+                            <span class="stat-val" id="statConsecutive">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Saved Collections Drawer / Tabs Section -->
+        <section class="saved-panel card-panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-box-archive"></i> 나의 행운 보관함 (<span id="savedCount">0</span>)</h2>
+                <button id="clearSavedBtn" class="small-btn danger"><i class="fa-solid fa-trash-can"></i> 모두 비우기</button>
+            </div>
+            <div class="saved-tickets-grid" id="savedTicketsGrid">
+                <div class="empty-saved-msg">저장된 행운의 로또 조합이 없습니다.</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal: Today's Fortune Reading -->
+    <div class="modal-overlay hidden" id="fortuneModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> 오늘의 AI 로또 운세 & 럭키 타임</h3>
+                <button class="modal-close-btn" id="closeFortuneModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="fortune-avatar">
+                    <i class="fa-solid fa-crystal-ball"></i>
+                </div>
+                <div class="fortune-content">
+                    <h4 id="fortuneTitle">"재물운의 기운이 강하게 상승하는 날입니다!"</h4>
+                    <p id="fortuneDesc">오늘의 기운에 어울리는 행운의 번호 3개와 추천 구매 시간대를 확인해 보세요.</p>
+                    
+                    <div class="lucky-items-box">
+                        <div class="lucky-item">
+                            <span class="item-label">오늘의 행운 수</span>
+                            <div class="lucky-balls" id="fortuneLuckyBalls"></div>
+                        </div>
+                        <div class="lucky-item">
+                            <span class="item-label">추천 구매 시간</span>
+                            <span class="item-val" id="fortuneTime">오후 03:00 ~ 05:00</span>
+                        </div>
+                        <div class="lucky-item">
+                            <span class="item-label">행운의 방위</span>
+                            <span class="item-val" id="fortuneDirection">남동쪽 복권 판매점</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="applyFortuneBallsBtn" class="primary-gradient-btn">
+                    <i class="fa-solid fa-check"></i> 행운의 번호를 고정수로 적용하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
