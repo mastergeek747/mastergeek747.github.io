@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글로벌 금융 히트맵 & 시장 대시보드 - Market Heatmap</title>
+    <meta name="description" content="미국주식, 국내주식, 주요 지수 및 환율을 한눈에 파악하는 모바일 겸용 글로벌 주식 히트맵 대시보드">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-glow">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+
+    <!-- Live Ticker Marquee Bar -->
+    <div class="marquee-bar">
+        <div class="marquee-label"><i class="fa-solid fa-bolt"></i> REALTIME</div>
+        <div class="marquee-track" id="marqueeTrack">
+            <!-- Ticker items dynamically injected -->
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Top Navigation Header -->
+        <header class="main-header">
+            <div class="brand-box">
+                <div class="brand-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                <div class="brand-text">
+                    <h1>FINANCE <span>HEATMAP</span></h1>
+                    <p>글로벌 증시 · 환율 · 지수 통합 대시보드</p>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <!-- Search Box -->
+                <div class="search-input-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="종목명, 티커, 환율 검색 (예: NVDA, 삼성전자, USD)...">
+                    <button id="clearSearchBtn" class="clear-btn hidden">&times;</button>
+                </div>
+
+                <!-- Add Custom Item Button -->
+                <button id="addCustomAssetBtn" class="action-btn primary">
+                    <i class="fa-solid fa-plus"></i> 관심종목 추가
+                </button>
+
+                <!-- Color Theme Switch (Western vs Asian color convention) -->
+                <div class="color-mode-toggle" title="상승/하강 색상 기준 설정">
+                    <button class="toggle-btn active" id="colorWesternBtn" data-color="western">
+                        <span class="dot green"></span>상승 초록 / 하강 빨강
+                    </button>
+                    <button class="toggle-btn" id="colorAsianBtn" data-color="asian">
+                        <span class="dot red"></span>상승 빨강 / 하강 파랑
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Category & Period Filter Bar -->
+        <nav class="filter-navbar">
+            <div class="category-tabs" id="categoryTabs">
+                <button class="tab-btn active" data-cat="all"><i class="fa-solid fa-globe"></i> 전체 시장</button>
+                <button class="tab-btn" data-cat="us-tech"><i class="fa-solid fa-microchip"></i> 미국 빅테크</button>
+                <button class="tab-btn" data-cat="kr-stock"><i class="fa-solid fa-flag-usa"></i> 국내 주요 종목</button>
+                <button class="tab-btn" data-cat="indices"><i class="fa-solid fa-chart-line"></i> 주요 증시 지수</button>
+                <button class="tab-btn" data-cat="forex"><i class="fa-solid fa-coins"></i> 환율 & 원자재</button>
+                <button class="tab-btn" data-cat="watchlist"><i class="fa-solid fa-star"></i> 나의 관심종목 (<span id="watchlistBadgeCount">0</span>)</button>
+            </div>
+
+            <div class="period-selectors">
+                <span class="label">기간:</span>
+                <button class="period-btn active" data-period="1D">1일</button>
+                <button class="period-btn" data-period="1W">1주</button>
+                <button class="period-btn" data-period="1M">1개월</button>
+                <button class="period-btn" data-period="1Y">1년</button>
+            </div>
+        </nav>
+
+        <!-- Heatmap Market Overview Grid -->
+        <main class="heatmap-main-view">
+            <!-- Heatmap Summary Header Stat Bar -->
+            <div class="market-status-bar">
+                <div class="status-card">
+                    <span class="card-label">상승 종목</span>
+                    <span class="card-val pos" id="statGainersCount">0</span>
+                </div>
+                <div class="status-card">
+                    <span class="card-label">보합</span>
+                    <span class="card-val neutral" id="statFlatCount">0</span>
+                </div>
+                <div class="status-card">
+                    <span class="card-label">하락 종목</span>
+                    <span class="card-val neg" id="statLosersCount">0</span>
+                </div>
+                <div class="status-card">
+                    <span class="card-label">평균 변동률</span>
+                    <span class="card-val" id="statAvgChange">0.00%</span>
+                </div>
+                <div class="status-card live-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="live-time" id="lastUpdateTime">실시간 업데이트 중...</span>
+                </div>
+            </div>
+
+            <!-- Main Treemap / Heatmap Container -->
+            <div class="heatmap-container" id="heatmapContainer">
+                <!-- Heatmap Tiles Dynamically Generated Here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Stock / Asset Detail View -->
+    <div class="modal-overlay hidden" id="detailModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="asset-title-group">
+                    <div class="asset-symbol-badge" id="modalSymbolBadge">NVDA</div>
+                    <div>
+                        <h2 id="modalAssetName">NVIDIA Corporation</h2>
+                        <span class="asset-category-tag" id="modalCategoryTag">미국 빅테크 · NASDAQ</span>
+                    </div>
+                </div>
+                <button class="close-modal-btn" id="closeDetailModal">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Price Highlight Bar -->
+                <div class="modal-price-bar">
+                    <div class="current-price-val" id="modalCurrentPrice">$128.50</div>
+                    <div class="price-change-pill" id="modalPriceChange">+4.25 (+3.42%)</div>
+                </div>
+
+                <!-- Mini Canvas Trend Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <span>추세 차트 (최근 동향)</span>
+                        <div class="chart-time-range">
+                            <button class="time-tab active">1D</button>
+                            <button class="time-tab">1W</button>
+                            <button class="time-tab">1M</button>
+                            <button class="time-tab">1Y</button>
+                        </div>
+                    </div>
+                    <canvas id="detailChartCanvas" width="440" height="180"></canvas>
+                </div>
+
+                <!-- Financial Metrics Table Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="m-label">시가총액 / 규모</span>
+                        <span class="m-val" id="modalCap">3.15조 USD</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="m-label">일일 거래량</span>
+                        <span class="m-val" id="modalVolume">48.2M</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="m-label">오늘 고가</span>
+                        <span class="m-val pos" id="modalDayHigh">$130.20</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="m-label">오늘 저가</span>
+                        <span class="m-val neg" id="modalDayLow">$124.10</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="toggleWatchlistBtn" class="action-btn secondary">
+                    <i class="fa-regular fa-star"></i> 관심종목에 추가
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Custom Asset -->
+    <div class="modal-overlay hidden" id="addAssetModal">
+        <div class="modal-card small">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-plus-circle"></i> 신규 관심 종목/환율 추가</h3>
+                <button class="close-modal-btn" id="closeAddAssetModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addAssetForm">
+                    <div class="form-group">
+                        <label>종목 / 지수 / 환율 이름 *</label>
+                        <input type="text" id="newAssetName" placeholder="예: 테슬라, 엔비디아, 달러/원, KOSPI..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>티커 코드 (Symbol) *</label>
+                        <input type="text" id="newAssetSymbol" placeholder="예: TSLA, AAPL, USDKRW..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>카테고리 선택 *</label>
+                        <select id="newAssetCategory">
+                            <option value="us-tech">미국 빅테크/주식</option>
+                            <option value="kr-stock">국내 주요 종목</option>
+                            <option value="indices">주요 증시 지수</option>
+                            <option value="forex">환율 & 원자재</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>현재 가격 (기본값 설정)</label>
+                        <input type="number" step="any" id="newAssetPrice" placeholder="예: 250.50">
+                    </div>
+                    <button type="submit" class="action-btn primary full-width">
+                        <i class="fa-solid fa-check"></i> 종목 추가하기
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
